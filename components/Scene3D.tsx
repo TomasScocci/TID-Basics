@@ -4,8 +4,9 @@ import { useGLTF, Environment, OrbitControls, ContactShadows, Center } from '@re
 import * as THREE from 'three';
 
 // GROUND TRUTH: Base Model
-export const DEFAULT_MODEL_URL = "/Assets/Remera-Gris-Textura-HD.glb";
-const FALLBACK_URL = "/Assets/Remera-Gris-Textura-HD.glb";
+// Using SheenChair as a stable placeholder for fabric rendering until a specific hosted T-Shirt asset is provided.
+export const DEFAULT_MODEL_URL = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/SheenChair/glTF-Binary/SheenChair.glb";
+const FALLBACK_URL = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Box/glTF-Binary/Box.glb";
 
 interface ModelProps {
   url: string;
@@ -133,7 +134,7 @@ interface ErrorBoundaryState {
   hasError: boolean;
 }
 
-class ModelErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ModelErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
