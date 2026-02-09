@@ -4,7 +4,7 @@ import { useGLTF, Environment, OrbitControls, ContactShadows, Center } from '@re
 import * as THREE from 'three';
 
 // GROUND TRUTH: Base Model
-export const DEFAULT_MODEL_URL = "Remera-Gris-Textura-HD.glb";
+export const DEFAULT_MODEL_URL = "/Assets/Remera-Gris-Textura-HD.glb";
 const FALLBACK_URL = "/Assets/Remera-Gris-Textura-HD.glb";
 
 interface ModelProps {
