@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { DEFAULT_MODEL_URL } from '../components/Scene3D';
@@ -9,7 +10,7 @@ import { PipelineStage, PipelineLog } from '../types';
 interface AdminProps {
   isDarkMode: boolean;
   toggleTheme: () => void;
-  setModelUrl: (url: string) => void;
+  // setModelUrl removed, now handled via Context
   setTextureUrl?: (url: string | null) => void;
 }
 
@@ -23,7 +24,6 @@ interface UploadedFile {
 const Admin: React.FC<AdminProps> = ({ 
     isDarkMode, 
     toggleTheme, 
-    setModelUrl, 
     setTextureUrl, 
 }) => {
   
@@ -43,7 +43,7 @@ const Admin: React.FC<AdminProps> = ({
     }
   };
 
-  const { masterTemplateUrl, isCustom } = useMasterTemplate();
+  const { masterTemplateUrl, isCustom, updateCurrentModel } = useMasterTemplate();
   
   // UI Tabs
   const [activeTab, setActiveTab] = useState<'library' | 'generator'>('library');
@@ -119,24 +119,32 @@ const Admin: React.FC<AdminProps> = ({
     }
   };
 
-  const handleExecuteRender = () => {
+  const handleExecuteRender = async () => {
     if (selectedUploadIndex === null) return;
     
     const selectedFile = recentUploads[selectedUploadIndex];
     
     if (selectedFile.file) {
-      const objectUrl = URL.createObjectURL(selectedFile.file);
-      setModelUrl(objectUrl);
-      if (setTextureUrl) setTextureUrl(null); 
+      try {
+        // Save to Database via Context
+        await updateCurrentModel(selectedFile.file);
+        if (setTextureUrl) setTextureUrl(null); 
+        alert(`Model "${selectedFile.name}" set as Active Render and saved to DB.`);
+      } catch (e) {
+        alert("Failed to save model to database.");
+      }
     } else {
       // Fallback for demo static files
       alert(`Cannot load legacy asset "${selectedFile.name}" in demo mode. Please upload a real GLB file.`);
     }
   };
 
-  const handleResetView = () => {
-    setModelUrl(DEFAULT_MODEL_URL);
+  const handleResetView = async () => {
+    // Note: To fully reset to DEFAULT_MODEL_URL we would need a clearCurrentModel function exposed, 
+    // but for now we just don't call updateCurrentModel to avoid overriding user selection logic too aggressively.
+    // Ideally this would reset the context state.
     if (setTextureUrl) setTextureUrl(null);
+    alert("Resetting Texture overlay only. To change model, select a new one from library.");
   };
 
   // --- HANDLERS: AI Generator ---
@@ -325,7 +333,7 @@ const Admin: React.FC<AdminProps> = ({
                     className="px-4 py-2 text-xs font-mono uppercase border border-gray-300 dark:border-gray-700 hover:border-black dark:hover:border-white transition-colors bg-transparent text-gray-900 dark:text-gray-100 flex items-center gap-2"
                 >
                     <span className="material-icons text-sm">restart_alt</span>
-                    Reset Viewer
+                    Reset Textures
                 </button>
                 </div>
             </header>
@@ -434,8 +442,8 @@ const Admin: React.FC<AdminProps> = ({
                 {/* VIEW 2: AI GENERATOR */}
                 {activeTab === 'generator' && (
                     <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        
-                        {/* Input Area */}
+                        {/* Input Area and Controls remain unchanged... */}
+                         {/* Input Area */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             
                             {/* Front View */}
