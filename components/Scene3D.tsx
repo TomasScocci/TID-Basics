@@ -5,7 +5,7 @@ import * as THREE from 'three';
 
 // GROUND TRUTH: Base Model
 export const DEFAULT_MODEL_URL = "/Assets/Remera-Gris-Textura-HD.glb";
-const FALLBACK_URL = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Box/glTF-Binary/Box.glb";
+const FALLBACK_URL = "/Assets/Remera-Gris-Textura-HD.glb";
 
 interface ModelProps {
   url: string;
