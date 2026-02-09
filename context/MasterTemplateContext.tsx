@@ -1,57 +1,75 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { saveMasterModel, getMasterModel, clearMasterModel } from '../utils/storage';
+import { 
+  saveMasterModel, getMasterModel, clearMasterModel,
+  saveCurrentModel, getCurrentModel
+} from '../utils/storage';
 import { DEFAULT_MODEL_URL } from '../components/Scene3D';
 
 interface MasterTemplateContextType {
+  // Master Template (For AI Pipeline)
   masterTemplateUrl: string;
-  isCustom: boolean; // True if loaded from DB, False if using DEFAULT
+  isCustom: boolean; 
   isLoading: boolean;
   uploadMasterTemplate: (file: File) => Promise<void>;
   resetMasterTemplate: () => Promise<void>;
+  
+  // Current Display Model (For Viewer)
+  currentModelUrl: string;
+  updateCurrentModel: (file: File) => Promise<void>;
 }
 
 const MasterTemplateContext = createContext<MasterTemplateContextType | undefined>(undefined);
 
 export const MasterTemplateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // AI Template State
   const [masterTemplateUrl, setMasterTemplateUrl] = useState<string>(DEFAULT_MODEL_URL);
   const [isCustom, setIsCustom] = useState<boolean>(false);
+  
+  // Viewer Display State
+  const [currentModelUrl, setCurrentModelUrl] = useState<string>(DEFAULT_MODEL_URL);
+  
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Load from DB on mount
   useEffect(() => {
-    const initMasterModel = async () => {
+    const initDatabases = async () => {
       try {
-        const blob = await getMasterModel();
-        if (blob) {
-          const objectUrl = URL.createObjectURL(blob);
-          setMasterTemplateUrl(objectUrl);
+        // 1. Load Master Template (AI)
+        const masterBlob = await getMasterModel();
+        if (masterBlob) {
+          setMasterTemplateUrl(URL.createObjectURL(masterBlob));
           setIsCustom(true);
         } else {
           setMasterTemplateUrl(DEFAULT_MODEL_URL);
           setIsCustom(false);
         }
+
+        // 2. Load Current Active Model (Viewer)
+        const currentBlob = await getCurrentModel();
+        if (currentBlob) {
+          setCurrentModelUrl(URL.createObjectURL(currentBlob));
+        } else {
+          setCurrentModelUrl(DEFAULT_MODEL_URL);
+        }
+
       } catch (error) {
-        console.error("Failed to load master model from DB:", error);
-        setMasterTemplateUrl(DEFAULT_MODEL_URL);
+        console.error("Failed to load assets from DB:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    initMasterModel();
+    initDatabases();
   }, []);
 
+  // --- AI MASTER TEMPLATE ACTIONS ---
   const uploadMasterTemplate = async (file: File) => {
     setIsLoading(true);
     try {
       await saveMasterModel(file);
       const objectUrl = URL.createObjectURL(file);
-      
-      // Revoke old URL if it was a blob to avoid leaks (optional optimization)
-      if (isCustom && masterTemplateUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(masterTemplateUrl);
-      }
-
+      if (isCustom && masterTemplateUrl.startsWith('blob:')) URL.revokeObjectURL(masterTemplateUrl);
       setMasterTemplateUrl(objectUrl);
       setIsCustom(true);
     } catch (error) {
@@ -66,15 +84,32 @@ export const MasterTemplateProvider: React.FC<{ children: React.ReactNode }> = (
     setIsLoading(true);
     try {
       await clearMasterModel();
-      if (isCustom && masterTemplateUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(masterTemplateUrl);
-      }
+      if (isCustom && masterTemplateUrl.startsWith('blob:')) URL.revokeObjectURL(masterTemplateUrl);
       setMasterTemplateUrl(DEFAULT_MODEL_URL);
       setIsCustom(false);
     } catch (error) {
       console.error("Failed to reset master model:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // --- CURRENT VIEWER MODEL ACTIONS ---
+  const updateCurrentModel = async (file: File) => {
+    // Optimistic UI update could go here, but we wait for DB to be safe
+    try {
+      await saveCurrentModel(file);
+      const objectUrl = URL.createObjectURL(file);
+      
+      // Cleanup previous blob if exists
+      if (currentModelUrl.startsWith('blob:') && currentModelUrl !== DEFAULT_MODEL_URL) {
+        URL.revokeObjectURL(currentModelUrl);
+      }
+      
+      setCurrentModelUrl(objectUrl);
+    } catch (error) {
+      console.error("Failed to save current model:", error);
+      throw error;
     }
   };
 
@@ -85,7 +120,9 @@ export const MasterTemplateProvider: React.FC<{ children: React.ReactNode }> = (
         isCustom, 
         isLoading, 
         uploadMasterTemplate, 
-        resetMasterTemplate 
+        resetMasterTemplate,
+        currentModelUrl,
+        updateCurrentModel
       }}
     >
       {children}
