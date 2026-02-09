@@ -5,7 +5,7 @@ import * as THREE from 'three';
 
 // GROUND TRUTH: Base Model
 // Using SheenChair as a stable placeholder for fabric rendering until a specific hosted T-Shirt asset is provided.
-export const DEFAULT_MODEL_URL = "/assets/remera-gris-textura.glb";
+export const DEFAULT_MODEL_URL = "https://res.cloudinary.com/dccyve5xd/image/upload/v1770675121/remera-gris-textura_x5mmao.glb";
 const FALLBACK_URL = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Box/glTF-Binary/Box.glb";
 
 interface ModelProps {
