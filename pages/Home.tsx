@@ -1,5 +1,5 @@
+
 import React, { Suspense } from 'react';
-import { Link } from 'react-router-dom';
 import Scene3D from '../components/Scene3D';
 
 interface HomeProps {
@@ -27,16 +27,8 @@ const Home: React.FC<HomeProps> = ({ isDarkMode, toggleTheme, modelUrl, textureU
              <h1 className="font-serif font-bold text-5xl md:text-6xl tracking-widest text-chrome relative top-[-8px]">T.I.D</h1>
         </div>
 
-        {/* Right: Asset Manager Button */}
-        <div className="w-full md:w-1/3 flex justify-end pointer-events-auto absolute md:relative top-8 right-8 md:top-0 md:right-0">
-            <Link 
-                to="/admin"
-                className="flex items-center gap-2 px-6 py-2 text-[10px] font-medium tracking-[0.2em] uppercase rounded-full border border-white/20 hover:bg-white hover:text-black transition-all duration-500 bg-black/20 backdrop-blur-sm"
-            >
-                Asset Manager
-                <span className="material-icons text-sm">arrow_forward</span>
-            </Link>
-        </div>
+        {/* Right: Spacer for Balance (Button Removed) */}
+        <div className="w-1/3 hidden md:block"></div>
       </header>
 
       {/* Main Content Layout - Flex Column for Strict Vertical Ordering */}
