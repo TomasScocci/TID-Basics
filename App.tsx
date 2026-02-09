@@ -1,10 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import Admin from './pages/Admin';
 import Settings from './pages/Settings';
-import { MasterTemplateProvider } from './context/MasterTemplateContext';
-import { DEFAULT_MODEL_URL } from './components/Scene3D';
+import { MasterTemplateProvider, useMasterTemplate } from './context/MasterTemplateContext';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -18,8 +18,8 @@ const ScrollToTop = () => {
 const MainLayout: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   
-  // Local state for the Viewer
-  const [modelUrl, setModelUrl] = useState<string>(DEFAULT_MODEL_URL);
+  // Use Global State for Model Persistence
+  const { currentModelUrl } = useMasterTemplate();
   const [textureUrl, setTextureUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ const MainLayout: React.FC = () => {
             <Home 
               isDarkMode={isDarkMode} 
               toggleTheme={toggleTheme} 
-              modelUrl={modelUrl} 
+              modelUrl={currentModelUrl} 
               textureUrl={textureUrl}
             />
           } 
@@ -53,7 +53,7 @@ const MainLayout: React.FC = () => {
             <Admin 
               isDarkMode={isDarkMode} 
               toggleTheme={toggleTheme} 
-              setModelUrl={setModelUrl} 
+              // Removed setModelUrl prop as Admin now uses Context directly
               setTextureUrl={setTextureUrl}
             />
           } 
